@@ -1,21 +1,26 @@
-import { BrowserRouter as Router, Routes, Route, Switch } from "react-router-dom";
-import Home from "./pages/Home";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
-import "./App.css";
-import { Fragment } from "react";
+import HomePage from "./pages/HomePage/HomePage";
+import Header from "./components/Header/Header";
+import Footer from "./components/Footer/Footer";
+import CatalogPage from "./pages/Catalog/CatalogPage";
+import "./App.scss";
 
 function App() {
 
   return (
-    <Fragment>
-      <Router>
+    <Router>
+      <Header />
+      <div className="main-wrapper">
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<HomePage />} />
+          <Route exact path="/catalog" element={<CatalogPage />} />
           <Route exact path="/test" element={<div>testing page</div>} />
         </Routes>
-      </Router>
-    </Fragment>
+      </div>
+      <Footer />
+    </Router>
   );
 }
 
-export default App;;
+export default App;

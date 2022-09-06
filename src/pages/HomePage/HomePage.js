@@ -1,10 +1,8 @@
 import { Link } from "react-router-dom";
 
-import "./Home.css";
+import "./HomePage.scss";
 
-import React from 'react';
-
-function Home(props) {
+function HomePage(props) {
     return (
         <div>
             <Link to="/test">
@@ -14,4 +12,4 @@ function Home(props) {
     );
 }
 
-export default Home;
+export default HomePage;
