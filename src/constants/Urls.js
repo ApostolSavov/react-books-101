@@ -1,5 +1,5 @@
 const Urls = {
-    "devApi": "http://localhost:4000/api/"
+    "devApi": "http://localhost:4000/api"
 };
 
 
