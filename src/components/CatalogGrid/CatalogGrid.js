@@ -1,45 +1,30 @@
-import { useState } from "react";
 import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { getAllBooks, cancelLoading } from "../../slices/books";
 
 import "./CatalogGrid.scss";
 import Spinner from "../../utils/Spinner/Spinner";
 import CatalogCard from "../CatalogCard/CatalogCard";
-import { Urls } from "../../constants/Urls";
-import axios from "axios";
 
 const CatalogGrid = () => {
-    const [items, setItems] = useState([]);
-    const [error, setError] = useState('');
-    const [loaded, setLoaded] = useState(false);
+    const { books, isLoaded, error } = useSelector(({ books }) => books);
+    const dispatch = useDispatch();
+    const controller = new AbortController();
 
-    console.log('grid rendered');
+    const initFetch = (abortController) => dispatch(getAllBooks(abortController));
 
     useEffect(() => {
-
-        const controller = new AbortController();
-
-        axios
-            .get(`${Urls.devApi}/books`, {
-                signal: controller.signal
-            })
-            .then(({ data }) => {
-                setItems(data);
-            })
-            .catch(({ response }) => {
-                setError(response.statusText);
-            })
-            .finally(() => {
-                setLoaded(true);
-            });
+        initFetch(controller);
 
         return () => {
+            dispatch(cancelLoading());
             controller.abort();
         };
     }, []);
 
     return (
         <div className="catalog-grid-wrapper">
-            {!loaded &&
+            {!isLoaded &&
                 <div className="generic-centering-wrapper">
                     <Spinner />
                 </div>
@@ -51,7 +36,7 @@ const CatalogGrid = () => {
                     </div>
                     :
                     <div className="catalog-grid">
-                        {items.map(({ id, title, author, imageLink }) => (
+                        {books.map(({ id, title, author, imageLink }) => (
                             <CatalogCard
                                 key={id}
                                 id={id}

@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
-import HomePage from "./pages/HomePage/HomePage";
 import Header from "./components/Header/Header";
 import Footer from "./components/Footer/Footer";
 import CatalogPage from "./pages/Catalog/CatalogPage";
@@ -13,13 +12,13 @@ function App() {
       <Header />
       <div className="main-wrapper">
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          <Route exact path="/" element={<CatalogPage />} />
           <Route exact path="/catalog" element={<CatalogPage />} />
           <Route exact path="/test" element={<div>testing page</div>} />
         </Routes>
-      </div>
+      </div >
       <Footer />
-    </Router>
+    </Router >
   );
 }
 
