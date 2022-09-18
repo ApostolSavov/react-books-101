@@ -7,11 +7,18 @@ import Spinner from "../../utils/Spinner/Spinner";
 import CatalogCard from "../CatalogCard/CatalogCard";
 
 const CatalogGrid = () => {
-    const { books, isLoaded, error } = useSelector(({ books }) => books);
+    const { books, isLoaded, error, filter } = useSelector(({ books }) => books);
     const dispatch = useDispatch();
     const controller = new AbortController();
 
     const initFetch = (abortController) => dispatch(getAllBooks(abortController));
+
+    const filterBooks = (book) => {
+        const title = book.title.toLowerCase();
+        const author = book.author.toLowerCase();
+
+        return (title.includes(filter) || author.includes(filter));
+    };
 
     useEffect(() => {
         initFetch(controller);
@@ -36,13 +43,15 @@ const CatalogGrid = () => {
                     </div>
                     :
                     <div className="catalog-grid">
-                        {books.map(({ id, title, author, imageLink }) => (
-                            <CatalogCard
-                                key={id}
-                                id={id}
-                                title={title}
-                                author={author}
-                                imgSrc={imageLink} />))}
+                        {books
+                            .filter(filterBooks)
+                            .map(({ id, title, author, imageLink }) => (
+                                <CatalogCard
+                                    key={id}
+                                    id={id}
+                                    title={title}
+                                    author={author}
+                                    imgSrc={imageLink} />))}
                     </div>
             }
         </div>
