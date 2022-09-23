@@ -22,8 +22,11 @@ const CatalogGrid = () => {
 
     useEffect(() => {
         initFetch(controller);
+    }, [filter]);
 
+    useEffect(() => {
         return () => {
+            console.log("cleanup");
             dispatch(cancelLoading());
             controller.abort();
         };
