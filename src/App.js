@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
 import Header from "./components/Header/Header";
 import Footer from "./components/Footer/Footer";
@@ -12,8 +12,9 @@ function App() {
       <Header />
       <div className="main-wrapper">
         <Routes>
-          <Route exact path="/" element={<CatalogPage />} />
+          <Route exact path="/" element={<Navigate to="/catalog" replace />} />
           <Route exact path="/catalog" element={<CatalogPage />} />
+          <Route exact path="/catalog?page=:page" element={<CatalogPage />} />
           <Route exact path="/test" element={<div>testing page</div>} />
         </Routes>
       </div >

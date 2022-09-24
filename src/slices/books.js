@@ -1,40 +1,44 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import BookService from "../services/bookService";
+import { filterHandler } from "../utils/helpers/bookFilter";
 
 export const getAllBooks = createAsyncThunk(
     'books/getAllBooks',
-    (controller) => {
-        return BookService.getAll(controller)
-            .then()
-            .catch();
+    ({ abortController }) => {
+        return BookService.getAll(abortController)
+            .then(({ data }) => data)
+            .catch(({ response }) => response);
     });
+
+const initialState = { collection: [], modifiedCollection: [], isLoaded: false, error: null, filter: '', prevFilter: '', currentPage: 1 };
 
 const booksSlice = createSlice({
     name: "books",
-    initialState: { books: [], isLoaded: false, error: null, filter: "" },
+    initialState,
     reducers: {
+        getFilteredBooks: (state, action) => {
+            state.modifiedCollection = state.collection.filter((book) => filterHandler(book, action.payload));
+        },
         changeFilter: (state, action) => {
-            console.log(action.payload);
+            state.prevFilter = state.filter;
             state.filter = action.payload;
         },
         cancelLoading: (state) => {
-            state.books = [];
-            state.isLoaded = false;
-            state.error = null;
-            state.filter = "";
+            state = initialState;
         }
     },
     extraReducers: {
         [getAllBooks.fulfilled]: (state, action) => {
             state.isLoaded = true;
-            state.books = action.payload.data;
+            state.collection = action.payload;
+            state.modifiedCollection = action.payload;
         },
         [getAllBooks.rejected]: (state, action) => {
             state.isLoaded = true;
-            state.error = action.payload.response;
-        },
+            state.error = action.payload;
+        }
     }
 });
 
-export const { cancelLoading, changeFilter } = booksSlice.actions;
+export const { cancelLoading, changeFilter, getFilteredBooks } = booksSlice.actions;
 export const { reducer } = booksSlice;

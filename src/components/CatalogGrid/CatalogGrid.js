@@ -1,36 +1,56 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getAllBooks, cancelLoading } from "../../slices/books";
+import { Link, useSearchParams, useLocation } from "react-router-dom";
 
 import "./CatalogGrid.scss";
 import Spinner from "../../utils/Spinner/Spinner";
 import CatalogCard from "../CatalogCard/CatalogCard";
+import { getAllBooks, getFilteredBooks, cancelLoading } from "../../slices/books";
 
 const CatalogGrid = () => {
-    const { books, isLoaded, error, filter } = useSelector(({ books }) => books);
+    const { modifiedCollection, isLoaded, error, filter } = useSelector(({ books }) => books);
     const dispatch = useDispatch();
+    const [queryParams, setQueryParams] = useSearchParams();
+    const location = useLocation();
+    const pageNumber = queryParams.get('page');
     const controller = new AbortController();
 
-    const initFetch = (abortController) => dispatch(getAllBooks(abortController));
+    const pages = (length) => [...Array(Math.ceil(length / 20)).keys()];
 
-    const filterBooks = (book) => {
-        const title = book.title.toLowerCase();
-        const author = book.author.toLowerCase();
+    const getAllBooksHandler = (abortController) => dispatch(getAllBooks({ abortController }));
+    const getFilteredBooksHandler = (filter) => dispatch(getFilteredBooks(filter));
 
-        return (title.includes(filter) || author.includes(filter));
+    const paginationSlice = (array, page, limit = 20) => {
+        page = page ? page : 1;
+
+        return array.slice((page - 1) * limit, page * limit);
     };
 
-    useEffect(() => {
-        initFetch(controller);
-    }, [filter]);
+    console.log("render 0");
 
     useEffect(() => {
+        console.log("render 1");
+
+        getAllBooksHandler(controller);
         return () => {
-            console.log("cleanup");
             dispatch(cancelLoading());
             controller.abort();
         };
     }, []);
+
+    useEffect(() => {
+        getFilteredBooksHandler(filter);
+    }, [filter]);
+
+    useEffect(() => {
+        if (filter) {
+            if (pages(modifiedCollection.length).length < queryParams.get('page')) {
+                queryParams.set('page', '1');
+            }
+            setQueryParams(queryParams, { replace: true });
+        }
+
+    }, [modifiedCollection.length]);
 
     return (
         <div className="catalog-grid-wrapper">
@@ -45,17 +65,30 @@ const CatalogGrid = () => {
                         <h2>Error: {error}</h2>
                     </div>
                     :
-                    <div className="catalog-grid">
-                        {books
-                            .filter(filterBooks)
-                            .map(({ id, title, author, imageLink }) => (
-                                <CatalogCard
-                                    key={id}
-                                    id={id}
-                                    title={title}
-                                    author={author}
-                                    imgSrc={imageLink} />))}
-                    </div>
+                    <>
+                        <div className="catalog-grid">
+                            {paginationSlice(modifiedCollection, pageNumber)
+                                .map(({ id, title, author, imageLink }) => (
+                                    <CatalogCard
+                                        key={id}
+                                        id={id}
+                                        title={title}
+                                        author={author}
+                                        imgSrc={imageLink} />))}
+                        </div>
+                        <div className="pagination-ribbon">
+                            {pages(modifiedCollection.length).map((n) => {
+                                const pageNum = n + 1;
+                                return (
+                                    <Link key={pageNum} className="pagination-page-link" to={`/catalog?page=${pageNum}`} >
+                                        <div className="pagination-page-number">
+                                            {pageNum}
+                                        </div>
+                                    </Link>
+                                );
+                            })}
+                        </div>
+                    </>
             }
         </div>
     );
