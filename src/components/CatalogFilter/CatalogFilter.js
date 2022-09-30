@@ -1,26 +1,29 @@
 import './CatalogFilter.scss';
-import { changeFilter } from "../../slices/books";
 import { useDebounce } from '../../utils/hooks/useDebounce';
-import { useDispatch } from "react-redux";
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 const CatalogFilter = () => {
-    const [currentValue, setCurrentValue] = useState('');
-    const dispatch = useDispatch();
+    const [queryParams, setQueryParams] = useSearchParams();
+    const currentFilter = queryParams.get('filter');
 
+    const [currentValue, setCurrentValue] = useState(currentFilter || '');
     const debouncedFilterValue = useDebounce(currentValue, 500);
 
-    useEffect(() => {
-        const listener = window.addEventListener("popstate", () => {
-            setCurrentValue('');
-        });
-        return () => {
-            window.removeEventListener("popstate", listener);
-        };
-    }, []);
+    console.log("rendered filter");
+
 
     useEffect(() => {
-        dispatch(changeFilter(debouncedFilterValue));
+        setCurrentValue(currentFilter || '');
+
+    }, [queryParams.get('filter')]);
+
+    useEffect(() => {
+        if (debouncedFilterValue && debouncedFilterValue !== currentFilter) {
+            setQueryParams({ ...queryParams, filter: debouncedFilterValue });
+
+        }
+
     }, [debouncedFilterValue]);
 
     return (
