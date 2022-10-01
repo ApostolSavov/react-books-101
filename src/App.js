@@ -14,7 +14,6 @@ function App() {
         <Routes>
           <Route exact path="/" element={<Navigate to="/catalog" replace />} />
           <Route exact path="/catalog" element={<CatalogPage />} />
-          <Route exact path="/catalog?page=:page" element={<CatalogPage />} />
           <Route exact path="/test" element={<div>testing page</div>} />
         </Routes>
       </div >

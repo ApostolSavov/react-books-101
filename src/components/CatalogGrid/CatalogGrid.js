@@ -1,37 +1,44 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, useSearchParams, useLocation } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 
 import "./CatalogGrid.scss";
 import Spinner from "../../utils/Spinner/Spinner";
+import { filterHandler } from "../../utils/helpers/filterHandler";
+import { sortHandler } from "../../utils/helpers/sortHandler";
 import CatalogCard from "../CatalogCard/CatalogCard";
-import { getAllBooks, getFilteredBooks, cancelLoading } from "../../slices/books";
+import CatalogPagination from "../CatalogPagination/CatalogPagination";
+import { getAllBooks, cancelLoading, modifyCollection } from "../../slices/books";
 
 const CatalogGrid = () => {
-    const { modifiedCollection, isLoaded, error, filter } = useSelector(({ books }) => books);
-    const dispatch = useDispatch();
-    const [queryParams, setQueryParams] = useSearchParams();
-    const location = useLocation();
-    const pageNumber = queryParams.get('page');
+    const { collection, mutableCollection, isLoaded, error } = useSelector(({ books }) => books);
+    const [queryParams] = useSearchParams();
+    const page = queryParams.get('page') || 1;
+
     const controller = new AbortController();
+    const dispatch = useDispatch();
 
-    const pages = (length) => [...Array(Math.ceil(length / 20)).keys()];
-
-    const getAllBooksHandler = (abortController) => dispatch(getAllBooks({ abortController }));
-    const getFilteredBooksHandler = (filter) => dispatch(getFilteredBooks(filter));
-
-    const paginationSlice = (array, page, limit = 20) => {
-        page = page ? page : 1;
-
-        return array.slice((page - 1) * limit, page * limit);
+    const booksByPage = (collection, page, limit = 20) => {
+        return collection.slice((page - 1) * limit, page * limit);
     };
 
-    console.log("render 0");
+    const collectionModifier = (collection) => {
+        let modifiedCollection = [...collection];
+
+        if (queryParams.get('filter')) {
+            modifiedCollection = collection.filter((book) => filterHandler(book, queryParams.get('filter')));
+        }
+        if (queryParams.get('sort')) {
+            //todo
+            modifiedCollection.sort(sortHandler);
+        }
+
+        return modifiedCollection;
+    };
 
     useEffect(() => {
-        console.log("render 1");
+        dispatch(getAllBooks(controller));
 
-        getAllBooksHandler(controller);
         return () => {
             dispatch(cancelLoading());
             controller.abort();
@@ -39,18 +46,9 @@ const CatalogGrid = () => {
     }, []);
 
     useEffect(() => {
-        getFilteredBooksHandler(filter);
-    }, [filter]);
+        dispatch(modifyCollection(collectionModifier(collection)));
 
-    useEffect(() => {
-        if (filter) {
-            if (pages(modifiedCollection.length).length < queryParams.get('page')) {
-                queryParams.set('page', '1');
-            }
-            setQueryParams(queryParams, { replace: true });
-        }
-
-    }, [modifiedCollection.length]);
+    }, [queryParams, collection]);
 
     return (
         <div className="catalog-grid-wrapper">
@@ -67,26 +65,16 @@ const CatalogGrid = () => {
                     :
                     <>
                         <div className="catalog-grid">
-                            {paginationSlice(modifiedCollection, pageNumber)
-                                .map(({ id, title, author, imageLink }) => (
-                                    <CatalogCard
-                                        key={id}
-                                        id={id}
-                                        title={title}
-                                        author={author}
-                                        imgSrc={imageLink} />))}
+                            {booksByPage(mutableCollection, page).map(({ id, title, author, imageLink }) => (
+                                <CatalogCard
+                                    key={id}
+                                    id={id}
+                                    title={title}
+                                    author={author}
+                                    imgSrc={imageLink} />))}
                         </div>
                         <div className="pagination-ribbon">
-                            {pages(modifiedCollection.length).map((n) => {
-                                const pageNum = n + 1;
-                                return (
-                                    <Link key={pageNum} className="pagination-page-link" to={`/catalog?page=${pageNum}`} >
-                                        <div className="pagination-page-number">
-                                            {pageNum}
-                                        </div>
-                                    </Link>
-                                );
-                            })}
+                            <CatalogPagination collectionLength={mutableCollection.length}></CatalogPagination>
                         </div>
                     </>
             }

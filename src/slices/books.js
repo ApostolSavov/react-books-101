@@ -1,27 +1,22 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import BookService from "../services/bookService";
-import { filterHandler } from "../utils/helpers/bookFilter";
 
 export const getAllBooks = createAsyncThunk(
     'books/getAllBooks',
-    ({ abortController }) => {
+    (abortController) => {
         return BookService.getAll(abortController)
             .then(({ data }) => data)
             .catch(({ response }) => response);
     });
 
-const initialState = { collection: [], modifiedCollection: [], isLoaded: false, error: null, filter: '', prevFilter: '', currentPage: 1 };
+const initialState = { collection: [], mutableCollection: [], isLoaded: false, error: null };
 
 const booksSlice = createSlice({
     name: "books",
     initialState,
     reducers: {
-        getFilteredBooks: (state, action) => {
-            state.modifiedCollection = state.collection.filter((book) => filterHandler(book, action.payload));
-        },
-        changeFilter: (state, action) => {
-            state.prevFilter = state.filter;
-            state.filter = action.payload;
+        modifyCollection: (state, action) => {
+            state.mutableCollection = [...action.payload];
         },
         cancelLoading: (state) => {
             state = initialState;
@@ -31,7 +26,7 @@ const booksSlice = createSlice({
         [getAllBooks.fulfilled]: (state, action) => {
             state.isLoaded = true;
             state.collection = action.payload;
-            state.modifiedCollection = action.payload;
+            state.mutableCollection = action.payload;
         },
         [getAllBooks.rejected]: (state, action) => {
             state.isLoaded = true;
@@ -40,5 +35,5 @@ const booksSlice = createSlice({
     }
 });
 
-export const { cancelLoading, changeFilter, getFilteredBooks } = booksSlice.actions;
+export const { cancelLoading, modifyCollection } = booksSlice.actions;
 export const { reducer } = booksSlice;

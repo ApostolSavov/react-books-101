@@ -8,20 +8,20 @@ const CatalogFilter = () => {
     const currentFilter = queryParams.get('filter');
 
     const [currentValue, setCurrentValue] = useState(currentFilter || '');
-    const debouncedFilterValue = useDebounce(currentValue, 500);
-
-    console.log("rendered filter");
-
+    const debouncedFilterValue = useDebounce(currentValue, 750);
 
     useEffect(() => {
         setCurrentValue(currentFilter || '');
 
-    }, [queryParams.get('filter')]);
+    }, [currentFilter]);
 
     useEffect(() => {
         if (debouncedFilterValue && debouncedFilterValue !== currentFilter) {
-            setQueryParams({ ...queryParams, filter: debouncedFilterValue });
+            setQueryParams({ ...Object.fromEntries([...queryParams]), filter: debouncedFilterValue });
 
+        } else if (!debouncedFilterValue && currentFilter !== null) {
+            queryParams.delete('filter');
+            setQueryParams({ ...Object.fromEntries([...queryParams]) });
         }
 
     }, [debouncedFilterValue]);
