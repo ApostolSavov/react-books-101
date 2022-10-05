@@ -10,7 +10,7 @@ import CatalogCard from "../CatalogCard/CatalogCard";
 import CatalogPagination from "../CatalogPagination/CatalogPagination";
 import { getAllBooks, cancelLoading, modifyCollection } from "../../slices/books";
 
-const CatalogGrid = () => {
+const CatalogGrid = ({ scrollAnchor }) => {
     const { collection, mutableCollection, isLoaded, error } = useSelector(({ books }) => books);
     const [queryParams] = useSearchParams();
     const page = queryParams.get('page') || 1;
@@ -19,7 +19,7 @@ const CatalogGrid = () => {
     const dispatch = useDispatch();
 
     const booksByPage = (collection, page, limit = 20) => {
-        return collection.slice((page - 1) * limit, page * limit);
+        return collection.slice((page - 1) * limit, page * limit + 1);
     };
 
     const collectionModifier = (collection) => {
@@ -47,6 +47,7 @@ const CatalogGrid = () => {
 
     useEffect(() => {
         dispatch(modifyCollection(collectionModifier(collection)));
+        scrollAnchor.current?.scrollIntoView(true);
 
     }, [queryParams, collection]);
 
