@@ -17,11 +17,11 @@ const CatalogFilter = () => {
 
     useEffect(() => {
         if (debouncedFilterValue && debouncedFilterValue !== currentFilter) {
-            setQueryParams({ ...Object.fromEntries([...queryParams]), filter: debouncedFilterValue });
+            setQueryParams({ filter: debouncedFilterValue });
 
         } else if (!debouncedFilterValue && currentFilter !== null) {
             queryParams.delete('filter');
-            setQueryParams({ ...Object.fromEntries([...queryParams]) });
+            setQueryParams({});
         }
 
     }, [debouncedFilterValue]);

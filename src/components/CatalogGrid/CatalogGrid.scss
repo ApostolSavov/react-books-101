@@ -16,11 +16,9 @@
     justify-content: center;
 }
 
-.pagination {
-
-    &-ribbon {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
+.pagination-ribbon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 4rem 0 2rem;
 }

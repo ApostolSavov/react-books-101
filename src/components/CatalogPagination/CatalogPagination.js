@@ -1,28 +1,56 @@
-import './CatalogPagination.scss';
-
 import { useSearchParams } from 'react-router-dom';
+import { Fragment } from 'react';
+
+import './CatalogPagination.scss';
 
 const CatalogPagination = ({ collectionLength }) => {
     const [queryParams, setQueryParams] = useSearchParams();
+    const currentPage = Number(queryParams.get('page')) || 1;
 
-    const pages = (length) => [...Array(Math.ceil(length / 20)).keys()];
+    const pages = [...Array(Math.ceil(collectionLength / 20)).keys()];
+
+    const divider = () => <hr className='pagination-page-button-divider'></hr>;
+    const navButton = (btnContent, targetPage) => {
+        return (
+            <div className='pagination-page-button icon' onClick={(e) => clickHandler(targetPage)}>{btnContent}</div>
+        );
+    };
 
     const clickHandler = (page) => {
         setQueryParams({ ...Object.fromEntries([...queryParams]), page });
     };
 
     return (
-        pages(collectionLength).map((n) => {
-            const pageNum = n + 1;
+        <>
+            {
+                currentPage != 1 &&
+                <>
+                    {navButton('<', currentPage - 1)}
+                    {divider()}
+                </>
+            }
+            {
+                pages.map((n) => {
 
-            return (
-                <div key={pageNum} className="pagination-page-link" onClick={(e) => clickHandler(pageNum)} >
-                    <div className="pagination-page-number">
-                        {pageNum}
-                    </div>
-                </div>
-            );
-        })
+                    const pageNum = n + 1;
+
+                    return (
+                        <Fragment key={pageNum}>
+                            <div className={`pagination-page-button${currentPage == pageNum ? ' active' : ''}`} onClick={(e) => clickHandler(pageNum)} >
+                                {pageNum}
+                            </div>
+                            {divider()}
+                        </Fragment>
+                    );
+                })
+            }
+            {
+                currentPage != pages.length &&
+                <>
+                    {navButton('>', currentPage + 1)}
+                </>
+            }
+        </>
     );
 };
 
